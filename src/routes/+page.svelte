@@ -43,4 +43,4 @@
 <pre>{JSON.stringify($params, null, 2)}</pre>
 
 <input type="number" bind:value={$params.page} />
-<input type="number" bind:value={$params.itemsPerPage} />
+<input type="number" bind:value={$params.itemsPerPage} step="10" />
