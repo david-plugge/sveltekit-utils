@@ -51,9 +51,6 @@ export function createShallowRoute<Input = any, Data = any>({
 				return;
 			}
 			event.preventDefault();
-
-			console.log('ASD');
-
 			node.dispatchEvent(new CustomEvent('shallow', { detail: input }));
 			load(node.href, input);
 		}
