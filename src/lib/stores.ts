@@ -98,3 +98,49 @@ export function throttledWritable<T>(delay: number, store: Writable<T>): Writabl
 		update
 	};
 }
+
+export function derivedWritable<In, Out>(
+	store: Writable<In>,
+	options: {
+		read: (value: In) => Out;
+		write: (value: Out, other: In) => In;
+	}
+) {
+	const { subscribe } = derived(store, options.read);
+
+	const set = (value: Out) => {
+		store.set(options.write(value, get(store)));
+	};
+	const update = (updater: Updater<Out>) => {
+		set(updater(get({ subscribe })));
+	};
+
+	return {
+		subscribe,
+		set,
+		update
+	};
+}
+
+export function derivedWritableProperty<T extends Record<string, any>, Key extends keyof T>(
+	store: Writable<T>,
+	key: Key
+) {
+	const { subscribe } = derived(store, (data) => data[key]);
+
+	const set = (value: T[Key]) => {
+		store.update((data) => {
+			data[key] = value;
+			return data;
+		});
+	};
+	const update = (updater: Updater<T[Key]>) => {
+		set(updater(get({ subscribe })));
+	};
+
+	return {
+		subscribe,
+		set,
+		update
+	};
+}
