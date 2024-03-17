@@ -1,7 +1,7 @@
 import { building } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
-import { derived, get, readable, type Updater, type Writable } from 'svelte/store';
+import { derived, get, readable, type Updater } from 'svelte/store';
 
 const page_store = building
 	? readable({
@@ -29,7 +29,7 @@ export function useSearchParams<T = string | null>(options: {
 	encode: (value: T, searchParams: URLSearchParams) => URLSearchParamsInit;
 	sort?: boolean;
 	options?: GotoOptions;
-}): Writable<T> {
+}) {
 	const { subscribe } = derived(searchParams, options.decode);
 
 	function set(value: T, gotoOptions?: GotoOptions) {
