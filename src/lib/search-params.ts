@@ -32,7 +32,7 @@ export function useSearchParams<T = string | null>(options: {
 }): Writable<T> {
 	const { subscribe } = derived(searchParams, options.decode);
 
-	function set(value: T) {
+	function set(value: T, gotoOptions?: GotoOptions) {
 		const url = new URL(get(page).url);
 		const prevUrl = url.toString();
 
@@ -47,12 +47,13 @@ export function useSearchParams<T = string | null>(options: {
 			keepFocus: true,
 			noScroll: true,
 			replaceState: true,
-			...options.options
+			...options.options,
+			...gotoOptions
 		});
 	}
 
-	function update(updater: Updater<T>) {
-		set(updater(get({ subscribe })));
+	function update(updater: Updater<T>, gotoOptions?: GotoOptions) {
+		set(updater(get({ subscribe })), gotoOptions);
 	}
 
 	return {
