@@ -5,9 +5,9 @@ type RequiredKeys<T extends object> = keyof {
 	[P in keyof T as {} extends Pick<T, P> ? never : P]: 1;
 };
 
-type RoutesManifest = Record<string, Record<string, string>>;
+export type RoutesManifest = Record<string, Record<string, string>>;
 
-interface RouteBuilder<Routes extends RoutesManifest> {
+export interface RouteBuilder<Routes extends RoutesManifest> {
 	<RouteId extends keyof Routes>(
 		options: {
 			routeId: RouteId;
