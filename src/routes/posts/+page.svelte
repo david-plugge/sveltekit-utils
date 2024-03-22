@@ -10,6 +10,7 @@
 </script>
 
 <div class="flex gap-2">
+	<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 	{#each { length: 10 } as _item, i}
 		<a class="bg-neutral-50 px-4 py-2" href="/posts/{i}" use:shallow.link={i}> {i} </a>
 	{/each}
