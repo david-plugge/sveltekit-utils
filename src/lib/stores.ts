@@ -105,7 +105,7 @@ export function derivedWritable<In, Out>(
 		read: (value: In) => Out;
 		write: (value: Out, other: In) => In;
 	}
-) {
+): Writable<Out> {
 	const { subscribe } = derived(store, options.read);
 
 	const set = (value: Out) => {
@@ -125,22 +125,14 @@ export function derivedWritable<In, Out>(
 export function derivedWritableProperty<T extends Record<string, any>, Key extends keyof T>(
 	store: Writable<T>,
 	key: Key
-) {
-	const { subscribe } = derived(store, (data) => data[key]);
-
-	const set = (value: T[Key]) => {
-		store.update((data) => {
-			data[key] = value;
-			return data;
-		});
-	};
-	const update = (updater: Updater<T[Key]>) => {
-		set(updater(get({ subscribe })));
-	};
-
-	return {
-		subscribe,
-		set,
-		update
-	};
+): Writable<T[Key]> {
+	return derivedWritable(store, {
+		read(value) {
+			return value[key];
+		},
+		write(value, other) {
+			other[key] = value;
+			return other;
+		}
+	});
 }
