@@ -1,11 +1,98 @@
-import { derived, get, type Readable, type Updater, type Writable } from 'svelte/store';
+import { tick } from 'svelte';
+import {
+	derived,
+	get,
+	type Readable,
+	type StartStopNotifier,
+	type Updater,
+	type Writable
+} from 'svelte/store';
+
+export function writableState<T>(initial_value: T, start?: StartStopNotifier<T>) {
+	let value = $state(initial_value);
+
+	let subscribers = 0;
+	let stop: (() => void) | null = null;
+
+	return {
+		set value(newValue) {
+			value = newValue;
+		},
+		get value() {
+			if ($effect.active()) {
+				$effect(() => {
+					if (subscribers++ === 0) {
+						stop =
+							start?.(
+								(newValue) => (value = newValue),
+								(fn) => (value = fn(value))
+							) ?? null;
+					}
+
+					return () => {
+						tick().then(() => {
+							if (--subscribers === 0) {
+								stop?.();
+								stop = null;
+							}
+						});
+					};
+				});
+			}
+
+			return value;
+		}
+	};
+}
+
+export function readableState<T>(initial_value: T, start?: StartStopNotifier<T>) {
+	const store = writableState(initial_value, start);
+
+	return {
+		get value() {
+			return store.value;
+		}
+	};
+}
+
+export function statify<T>(store: Readable<T>) {
+	let value = $state(get(store));
+
+	let subscribers = 0;
+	let stop: (() => void) | null = null;
+
+	return {
+		get value() {
+			if ($effect.active()) {
+				$effect(() => {
+					if (subscribers++ === 0) {
+						stop = store.subscribe((val) => {
+							value = val;
+						});
+					}
+
+					return () => {
+						tick().then(() => {
+							if (--subscribers === 0) {
+								stop?.();
+								stop = null;
+							}
+						});
+					};
+				});
+			}
+
+			return value;
+		}
+	};
+}
 
 export function debounced<S extends Readable<any>>(delay: number, store: S): S {
 	let timerId: ReturnType<typeof setTimeout>;
 
 	let initial = true;
 
-	const { subscribe } = derived(store, (value, set) => {
+	const { subscribe } = derived(store, (value: any, set: (value: any) => void) => {
 		if (initial) {
 			set(value);
 			initial = false;
@@ -50,7 +137,7 @@ export function throttled<S extends Readable<any>>(delay: number, store: S): S {
 	let timerId: ReturnType<typeof setTimeout> | null = null;
 	let newValue: any;
 
-	const { subscribe } = derived(store, (value, set) => {
+	const { subscribe } = derived(store, (value: any, set: (value: any) => void) => {
 		if (initial) {
 			set(value);
 			initial = false;
